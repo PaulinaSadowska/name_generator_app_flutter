@@ -31,13 +31,18 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
 
   var favorites = <WordPair>[];
+  var history = <WordPair>[];
+  var historyListKey = GlobalKey();
 
   void getNext() {
+    history.insert(0, current);
+    var animatedList = historyListKey.currentState as AnimatedListState?;
+    animatedList?.insertItem(0);
     current = WordPair.random();
     notifyListeners();
   }
 
-  void toggleFavourite(WordPair pair) {
+  void toggleFavorite(WordPair pair) {
     if (favorites.contains(pair)) {
       favorites.remove(pair);
     } else {

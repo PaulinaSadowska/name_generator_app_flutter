@@ -1,5 +1,6 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:name_generator_app_flutter/generator.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -45,78 +46,57 @@ class MyAppState extends ChangeNotifier {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var pair = appState.current;
-    IconData icon;
-    if(appState.favorites.contains(pair)){
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
-    }
-
-
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            BigCard(pair: pair),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: ElevatedButton.icon(
-                      onPressed: () {
-                        appState.toggleFavourite(pair);
-                        print(appState.favorites);
-                      },
-                      icon: Icon(icon),
-                      label: Text("Like")),
-                ),
-                ElevatedButton(
-                    onPressed: () {
-                      appState.getNext();
-                    },
-                    child: Text("Thank you, next!")),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class BigCard extends StatelessWidget {
-  const BigCard({
-    super.key,
-    required this.pair,
-  });
+class _MyHomePageState extends State<MyHomePage> {
 
-  final WordPair pair;
+  var selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = theme.textTheme.displayMedium!.copyWith(
-      color: theme.colorScheme.onPrimary,
-    );
 
-    return Card(
-      color: theme.colorScheme.primary,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Text(
-          pair.asLowerCase,
-          style: style,
-          semanticsLabel: "${pair.first} ${pair.second}",
-        ),
-      ),
+    Widget page;
+    switch(selectedIndex) {
+      case 0:
+        page = GeneratorPage();
+        break;
+      case 1:
+        page = Placeholder();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          body: Row(children: [
+            SafeArea(
+                child: NavigationRail(
+              destinations: [
+                NavigationRailDestination(
+                    icon: Icon(Icons.home), label: Text('Home')),
+                    NavigationRailDestination(
+                    icon: Icon(Icons.favorite), label: Text('Favorites'))
+              ],
+              selectedIndex: selectedIndex,
+              extended: constraints.maxWidth >= 600,
+              onDestinationSelected: (value) {
+                setState(() {
+                  selectedIndex = value;
+                });
+              }),
+            ),
+            Expanded(child: Container(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              child: page,
+            ))
+            ])
+          );
+      }
     );
   }
 }
